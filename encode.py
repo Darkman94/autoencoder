@@ -32,13 +32,12 @@ class autoEncoder:
 		if len(self.layers) == 0:
 			raise ValueError("the network needs layers")
 		if self.layers[len(self.layers) - 1][0].shape[0] != len(x):
-			raise ValueError("The netrok must be built to output something of the same length")
+			raise ValueError("The network must be built to output something of the same length")
 		for layer in self.layers:
 			print(layer[0])
 			print(x)
 			val = np.dot(layer[0],x)
 			val += layer[1]
-			#TODO val logic?
 			x = layer[2](val)
 		return x
 		
