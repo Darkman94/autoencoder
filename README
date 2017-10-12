@@ -1,0 +1,3 @@
+Autoencoder
+
+A first attempt at implementing an Autoencoder, both using the Numpy and Tensorflow packages.
