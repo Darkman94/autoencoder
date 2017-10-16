@@ -9,6 +9,22 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
 import tensorflow as tf
 
+#Turn denoising on/off
+corrupt = True
+
+#the corruption function for the denoising
+def corruption(x):
+	'''adds a corruption to the input variables uniformly distributed in [-1,1]
+	
+	params:
+	x -> the (Tensorflow) value to be corrupted
+	'''
+	global corrupt
+	if corrupt:
+		return tf.multiply(x,tf.random_uniform(shape=tf.shape(x), minval = -1, maxval = 1, dtype = tf.float32))
+	else:
+		return x
+
 #a placeholder is used to store values that won't change
 #we'll load this with the MNIST data
 #None indicates we'll take arbitrarily many entries in that dimension, na d784 is the size of an individual MNIST image
@@ -39,7 +55,7 @@ b_7 = tf.Variable(tf.zeros([512]))
 W_8 = tf.Variable(tf.zeros([512,784]))
 b_8 = tf.Variable(tf.zeros([784]))
 
-y_1 = tf.nn.sigmoid(tf.matmul(x, W_1) + b_1)
+y_1 = tf.nn.sigmoid(tf.matmul(corruption(x), W_1) + b_1)
 y_2 = tf.nn.sigmoid(tf.matmul(y_1, W_2) + b_2)
 y_3 = tf.nn.sigmoid(tf.matmul(y_2, W_3) + b_3)
 y_4 = tf.nn.sigmoid(tf.matmul(y_3, W_4) + b_4)

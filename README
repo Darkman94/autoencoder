@@ -1,3 +1,6 @@
 Autoencoder
 
 A first attempt at implementing an Autoencoder, both using the Numpy and Tensorflow packages.
+
+encode.py -> A pure Numpy implementation, see for an in depth look at things like the backpropoagation and feed forward algorithms
+encode_tf.py -> an implementation in Tensorflow, see for a basic example of the Tensorflow library
