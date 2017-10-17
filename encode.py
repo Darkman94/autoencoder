@@ -10,6 +10,20 @@ def loss(yy, y):
 def dloss(x,y):
 	return 2*(x-y)
 
+def dsigma(x):
+	ans = expit(x)**2 * np.exp(-x)
+	return ans
+
+denoise = True
+
+def corrupt(x):
+		global denoise
+		if denoise:
+			ret = x * np.random.uniform(low = -1,high = 1,size = x.shape)
+		else:
+			ret = x
+		return ret
+
 class autoEncoder:
 
 	def __init__(self, dim):
@@ -54,13 +68,15 @@ class autoEncoder:
 	def backward(self, x,y):
 		i = len(self.layers) - 1
 		returned, xs, vals = self.forward(x)
-		if layer[i][3] == expit:
-			delta = dloss(returned, y) * \ dsigma(vals[-1])
-			self.diffs[i][0] += np.dot(delta, xs[-2].T)
+		if self.layers[i][2] == expit:
+			delta = dloss(returned, y) * dsigma(vals[-1])
+			self.diffs[i][0] += np.dot(delta, xs[-1].T)
+			self.diffs[i][1] += delta
 		for layer in self.layers[::-1]:
 			if i == len(self.layers) - 1:
+				i -= 1
 				pass
-			if layer[3] == expit:
+			if layer[2] == expit:
 				val = vals[i]
 				ds = dsigma(val)
 				delta = np.dot(layer[0].T, delta) * ds
@@ -83,9 +99,18 @@ class autoEncoder:
 		self.__update_weights()
 		return loss
 		
-		
-encoder = autoEncoder(3)
-x = np.array([1,2,3])
-encoder.addLayer()
-encoder.addLayer(nneurons=10)
-encoder.addLayer(nneurons=3)
+def main():		
+	encoder = autoEncoder(3)
+	x = np.array([1,2,3])
+	#xx = corrupt(x)
+	encoder.addLayer()
+	encoder.addLayer(nneurons=10)
+	encoder.addLayer(nneurons=3)
+	for _ in range(100000):
+		encoder.update(x)
+	out, foo, bar = encoder.forward(x)
+	#print(xx)
+	print(out)
+	
+if __name__ == '__main__':
+	main()
