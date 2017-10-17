@@ -7,24 +7,33 @@ def loss(yy, y):
 	ans = (y - yy[0])**2
 	return ans
 
+#the derivative of the loss function
 def dloss(x,y):
 	return 2*(x-y)
 
+#the derivative of the sigmoid function
 def dsigma(x):
 	ans = expit(x)**2 * np.exp(-x)
 	return ans
 
+#a paramter for turning on denoising
 denoise = True
 
 def corrupt(x):
-		global denoise
-		if denoise:
-			ret = x * np.random.uniform(low = -1,high = 1,size = x.shape)
-		else:
-			ret = x
-		return ret
+	'''Introduce a uniformly distributed random decay to our input
+	
+	params:
+		x -> the value t be corrupted
+	'''
+	global denoise
+	if denoise:
+		ret = x * np.random.uniform(low = -1,high = 1,size = x.shape)
+	else:
+		ret = x
+	return ret
 
 class autoEncoder:
+	'''A naive implementation of an autoencoder'''
 
 	def __init__(self, dim):
 		self.layers = []
@@ -39,6 +48,12 @@ class autoEncoder:
 	#0 -> Weight matrix diff
 	#1 -> Bias diff
 	def addLayer(self, nneurons = 5, activation = "SIGMOID"):
+		'''Adds a layer to the Autoencoder
+		
+		params:
+			nneurons -> the number of neurons to the layer (defult to 5)
+			activation -> A key for the activation function for the layer, defult SIGMOID for the sigmoid function
+		'''
 		triple = []
 		if len(self.layers) == 0:
 			triple.append(np.random.randn(nneurons, self.inDim))
@@ -51,6 +66,15 @@ class autoEncoder:
 		self.diffs.append([np.zeros_like(self.layers[len(self.layers)-1][0]), np.zeros_like(self.layers[len(self.layers)-1][1])])
 	
 	def forward(self, x):
+		'''Performs a forward pass of the network
+		
+		params:
+			x -> The value to be fed through the network
+		returns:
+			x -> the value pushed out of the network
+			xs -> the output of each layer (i.e. sigma(Wx + b))
+			vals -> the value of the matrix pass at each layer (ie Wx+b)
+		'''
 		if len(self.layers) == 0:
 			raise ValueError("the network needs layers")
 		if self.layers[len(self.layers) - 1][0].shape[0] != len(x):
@@ -66,6 +90,12 @@ class autoEncoder:
 		return x,xs, vals
 	
 	def backward(self, x,y):
+		'''Performs a backward pass of the network, and caluclates the diffs.
+		
+		params:
+			x -> the value to be fed in to the network
+			y -> The value that should be returned by the network
+		'''
 		i = len(self.layers) - 1
 		returned, xs, vals = self.forward(x)
 		if self.layers[i][2] == expit:
@@ -85,6 +115,11 @@ class autoEncoder:
 			i -= 1
 	
 	def __update_weights(self, mu = 1):
+		'''Updates the weights/biases of the network, and resets the diffs
+		
+		params:
+			mu -> the learning rate
+		'''
 		i = 0
 		for layer in self.layers:
 			layer[0] -= mu * self.diffs[i][0]
@@ -92,7 +127,14 @@ class autoEncoder:
 			self.diffs[i][0] = np.zeros_like(layer[0])
 			self.diffs[i][1] = np.zeros_like(layer[1])
 			i += 1
+	
 	def update(self, x, y=None):
+		'''Update the network
+		
+		params:
+			x -> the value to be fed in to the network
+			y -> the value expected (if not specified, will assume it's equal to x)
+		'''
 		if y is None:
 			y = x
 		self.backward(x,y)
@@ -102,15 +144,12 @@ class autoEncoder:
 def main():		
 	encoder = autoEncoder(3)
 	x = np.array([1,2,3])
-	#xx = corrupt(x)
+	xx = corrupt(x)
 	encoder.addLayer()
 	encoder.addLayer(nneurons=10)
 	encoder.addLayer(nneurons=3)
 	for _ in range(100000):
-		encoder.update(x)
-	out, foo, bar = encoder.forward(x)
-	#print(xx)
-	print(out)
+		encoder.update(x, y=xx)
 	
 if __name__ == '__main__':
 	main()

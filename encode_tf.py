@@ -67,7 +67,7 @@ y = tf.nn.sigmoid(tf.matmul(y_7, W_8) + b_8)
 #Get the function to minimize
 loss = tf.nn.l2_loss(y - x)
 
-#create a training step for (stochastic) gradient descent
+#create a training step for (batch) gradient descent
 train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
 
 l2diff = tf.sqrt( tf.reduce_sum(tf.square(tf.subtract(x, y)), reduction_indices=1))
@@ -77,7 +77,7 @@ with tf.Session() as sess:
 	#initialize our Variables
 	sess.run(tf.global_variables_initializer())
 	for _ in range(10000):
-		#load the next 50 values from MNIST (hre is where the stochastic comes in)
+		#load the next 50 values from MNIST (hre is where the batch comes in)
 		batch_x, batch_y = mnist.train.next_batch(50)
 		#run our training step (each Placeholder needs a value in the dictionary)
 		train_step.run(feed_dict={x: batch_x})
